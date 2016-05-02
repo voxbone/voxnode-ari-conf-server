@@ -18,13 +18,12 @@ function VoxConfBridge(ari) {
   /**
    * Sets up the bridge for the conference.
    */
-  this.init = function(bridgeIdentifier, remoteEndPoint) {
-    console.log("Bridge identifier is "+ bridgeIdentifier);
+  this.init = function(bridgeExten, remoteEndPoint) {
     console.log("Bridge remote end point is "+ remoteEndPoint);
     var createBridge = Q.denodeify(self.bridge.create.bind(self.bridge));
     createBridge({type: 'mixing,dtmf_events'})
       .then(function () {
-        self.setBridgeDefaults(bridgeIdentifier, remoteEndPoint);
+        self.setBridgeDefaults(bridgeExten, remoteEndPoint);
         self.registerEvents(self.bridge);
       })
       .then(function () {
@@ -86,18 +85,35 @@ function VoxConfBridge(ari) {
   /**
    * Initializes some default variables needed for the bridge.
    *
-   * @param {Str} bridgeIdentifier - unique bridge identifier
+   * @param {Str} bridgeExten - unique bridge exten
    * @return {Strr} remoteEndPoint - customer equipment URI for conference
    *
    */
-  this.setBridgeDefaults = function(bridgeIdentifier, remoteEndPoint) {
+  this.setBridgeDefaults = function(bridgeExten, remoteEndPoint) {
     self.bridge.lastJoined = [];
+    self.bridge.inactive = false;
     self.bridge.channels = [];
     self.bridge.recordingEnabled = false;
     self.bridge.recordingPaused = true;
     self.bridge.playingMoh = false;
-    self.bridge.bridgeIdentifier = bridgeIdentifier;
+    self.bridge.bridgeExten = bridgeExten;
+    console.log("Nitesh -- Bridge exten is "+ self.bridge.bridgeExten);
     self.bridge.remoteEndPoint = remoteEndPoint;
+  };
+
+  /**
+   * Returns true if bridge is inactive, false otherwise.
+   *
+   * @return {boolean} true/false
+   */
+  this.isInactive = function() {
+    if(self.bridge.inactive === true) {
+      console.log("this bridge ID [" + self.bridge.id + "] is inactive");
+      return true;
+    } else {
+      console.log("Nitesh-- bridge is active");
+      return false;
+    }
   };
 
   /**

@@ -97,6 +97,7 @@ function createFsm(ari, bridge, users) {
         'userExit': function() {
           this.transition('empty');
           console.log("Bridge transitioned to empty state, well time to delete the bridge then");
+          bridge.inactive = true;
           ChannelDriver.shutdownBridge(ari, bridge.id);
         }
       },

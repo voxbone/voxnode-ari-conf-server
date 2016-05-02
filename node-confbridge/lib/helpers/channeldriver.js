@@ -1,4 +1,4 @@
-var Q = require('q');
+ Q = require('q');
 
 module.exports = {
 
@@ -40,7 +40,7 @@ module.exports = {
    * @param {Object} bridgeID - ID of the bridge to be destroye
    */
   shutdownBridge : function(ari, bridgeId) {
-    console.log("Nitesh -- destorying the bridge "+ bridgeId);
+    console.log("Nitesh -- destroying the bridge "+ bridgeId);
     var shutdown = Q.denodeify(ari.bridges.destroy.bind(ari));
     return shutdown({bridgeId: bridgeId})
       .catch(function(err) {

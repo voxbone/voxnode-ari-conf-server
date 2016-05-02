@@ -43,7 +43,7 @@ function VoxBridgeManager(ari, db) {
           console.log("This is a known extension, we should handle it");
           channel.answer(function (err) {
             /** check there is already a bridge for this extension **/ 
-            confBridge  = bridgeList[exten];
+            confBridge  = self.findBridge(exten);
             if(confBridge !== undefined) { 
               console.log("We already have a bridge for this extension, so just use it");
               confBridge.registerUser(event, false, channel);
@@ -52,9 +52,9 @@ function VoxBridgeManager(ari, db) {
               confBridge = new VoxConfBridge(ari);
               confBridge.init(confBridgeProfile['bridge_identifier'], confBridgeProfile['remote_sip_uri']);
               /**Add the bridge to the bridgeList**/
-              bridgeList[exten] = confBridge;
+              bridgeList[confBridge.bridge.id] = confBridge;
               console.log("Bridge ID to register is "+ confBridge.bridge.id);
-              self.registerEvent(confBridge.bridge);
+              self.registerEvents(confBridge.bridge);
               confBridge.registerUser(event, false, channel);
             }
           
@@ -68,12 +68,12 @@ function VoxBridgeManager(ari, db) {
           console.error("Should have received two arguments, received args "+ event.args);
           ChannelDriver.hangupChannel(ari, channel.id);
       } else {
-        var bridgeIdentifier = event.args[1];
-        var bridge = bridgeList[bridgeIdentifier];
+        var bridgeExten = event.args[1];
+        var bridge = self.findBridge(bridgeExten);
         if (bridge !== undefined) {
           bridge.registerUser(event, true, channel);
         } else {
-          console.error("Couldn't find any bridge for this identifier "+ bridgeIdentifier);
+          console.error("Couldn't find any bridge for this identifier "+ bridgeExten);
           ChannelDriver.hangupChannel(ari, channel.id);
         }
       }
@@ -85,7 +85,7 @@ function VoxBridgeManager(ari, db) {
    * Register events on a bridge.
    * @param {Object} bridge - Bridge object
    */
-  this.registerEvent = function(bridge) {
+  this.registerEvents = function(bridge) {
     bridge.on('BridgeDestroyed', function (event, bridge) {
       self.handleBridgeDestroyed(event,bridge);
     });
@@ -98,18 +98,34 @@ function VoxBridgeManager(ari, db) {
    */
   this.handleBridgeDestroyed = function(event,bridge) {
     console.log("Nitesh -- Received the event "+ JSON.stringify(event));
-    var bridgeIdentifier;
-    for (var key in bridgeList) {
-      var obj = bridgeList[key];
-      if(obj.bridge.id === bridge.id) {
-        bridgeIdentifier = key;
-      }
-    }
-    if (bridgeIdentifier !== undefined) {
-      console.log("Nitesh -- Deleting the bdge object from list " + bridgeIdentifier );
-      delete bridgeList[bridgeIdentifier];
+    var bridgeId = bridge.id;
+    if (bridgeList[bridgeId] !== undefined) {
+      console.log("Nitesh -- Deleting the bridge object from list " + bridgeId );
+      delete bridgeList[bridgeId];
     }
   };
+
+  /**
+   * find if there is an exisiting bridge for this
+   * extension.
+   * @param {String} exten - Stasis channel extension
+   *
+   * @return {Object} bridge - Bridge object in case the channel
+   *                           can be added to an existing bridge,
+   *                           undefined otherwise  
+   */
+  this.findBridge = function(exten) {
+       var ret  = undefined;
+       console.log("Nitesh -- finding the bridge for exten "+ exten);
+       for (var id in bridgeList) {
+         var confBridge = bridgeList[id];
+         if (confBridge.bridge.bridgeExten === exten && !confBridge.isInactive()) {
+           ret = confBridge;
+           break;
+         }
+       }
+       return ret;
+  }
 
   /**
    * Returns the list of bridges, indexed by bridge id.

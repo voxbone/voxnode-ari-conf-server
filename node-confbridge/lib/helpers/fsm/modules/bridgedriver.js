@@ -34,7 +34,7 @@ function BridgeDriverModule() {
     /**Strip the uri scheme**/
     var uriScheme = bridge.remoteEndPoint.indexOf('sip:') === 0 ? 'sip' : 'sips';
     var uri = bridge.remoteEndPoint.substr(uriScheme.length + 1);
-    return invite({endpoint: 'SIP/'+config.voxconfpeer+'/voxconf!'+uri, app: config.ari_app , appArgs: ['outbound', bridge.bridgeIdentifier],  variables: {'SIPADDHEADER':'X-Remote-URI:'+bridge.remoteEndPoint} })
+    return invite({endpoint: 'SIP/'+config.voxconfpeer+'/voxconf!'+uri, app: config.ari_app , appArgs: ['outbound', bridge.bridgeExten],  variables: {'SIPADDHEADER':'X-Remote-URI:'+bridge.remoteEndPoint} })
       .catch(function(err) {
         console.error(err);
       });
