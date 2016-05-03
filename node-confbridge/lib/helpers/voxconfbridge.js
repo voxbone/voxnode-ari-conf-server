@@ -18,12 +18,12 @@ function VoxConfBridge(ari) {
   /**
    * Sets up the bridge for the conference.
    */
-  this.init = function(bridgeExten, remoteEndPoint) {
-    console.log("Bridge remote end point is "+ remoteEndPoint);
+  this.init = function(bridge_info) {
+    self.bridge.config = bridge_info;
     var createBridge = Q.denodeify(self.bridge.create.bind(self.bridge));
     createBridge({type: 'mixing,dtmf_events'})
       .then(function () {
-        self.setBridgeDefaults(bridgeExten, remoteEndPoint);
+        self.setBridgeDefaults();
         self.registerEvents(self.bridge);
       })
       .then(function () {
@@ -66,6 +66,7 @@ function VoxConfBridge(ari) {
       self.bridgeEnterHandleUsers(instances);
     });
     bridge.on('ChannelLeftBridge', function (event, instances) {
+      console.log("Nitesh -- Got the event "+ JSON.stringify(event));
       self.bridgeLeaveHandleBridge(instances);
       self.bridgeLeaveHandleGroups(instances);
       self.bridgeLeaveHandleUsers(instances);
@@ -84,21 +85,16 @@ function VoxConfBridge(ari) {
 
   /**
    * Initializes some default variables needed for the bridge.
-   *
-   * @param {Str} bridgeExten - unique bridge exten
-   * @return {Strr} remoteEndPoint - customer equipment URI for conference
-   *
    */
-  this.setBridgeDefaults = function(bridgeExten, remoteEndPoint) {
+  this.setBridgeDefaults = function() {
     self.bridge.lastJoined = [];
     self.bridge.inactive = false;
     self.bridge.channels = [];
     self.bridge.recordingEnabled = false;
     self.bridge.recordingPaused = true;
     self.bridge.playingMoh = false;
-    self.bridge.bridgeExten = bridgeExten;
-    console.log("Nitesh -- Bridge exten is "+ self.bridge.bridgeExten);
-    self.bridge.remoteEndPoint = remoteEndPoint;
+    self.bridge.locked = false;
+    self.bridge.muted = false;
   };
 
   /**

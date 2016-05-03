@@ -1,4 +1,4 @@
-'use-strict';
+'use strict';
 var db = require('../data/db.js');
 
 var VoxBridgeManager = require('./helpers/voxbridgemanager.js');

@@ -30,11 +30,11 @@ function BridgeDriverModule() {
    */
   this.inviteRemoteToBridge = function(ari, bridge) {
     var invite = Q.denodeify(ari.channels.originate.bind(ari));
-    console.log("inviting the remote party "+ bridge.remoteEndPoint); 
+    console.log("inviting the remote party "+ bridge.config.remote_sip_uri); 
     /**Strip the uri scheme**/
-    var uriScheme = bridge.remoteEndPoint.indexOf('sip:') === 0 ? 'sip' : 'sips';
-    var uri = bridge.remoteEndPoint.substr(uriScheme.length + 1);
-    return invite({endpoint: 'SIP/'+config.voxconfpeer+'/voxconf!'+uri, app: config.ari_app , appArgs: ['outbound', bridge.bridgeExten],  variables: {'SIPADDHEADER':'X-Remote-URI:'+bridge.remoteEndPoint} })
+    var uriScheme = bridge.config.remote_sip_uri.indexOf('sip:') === 0 ? 'sip' : 'sips';
+    var uri = bridge.config.remote_sip_uri.substr(uriScheme.length + 1);
+    return invite({endpoint: 'SIP/'+config.voxconfpeer+'/voxconf!'+uri, app: config.ari_app , appArgs: ['outbound', bridge.bridgeExten],  variables: {'SIPADDHEADER':'X-Remote-URI:'+bridge.config.remote_sip_uri} })
       .catch(function(err) {
         console.error(err);
       });

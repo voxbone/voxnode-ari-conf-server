@@ -146,13 +146,12 @@ function MySqlDB(dbConfig) {
    */
   this.getConfBridgeProfile = function(bridge_identifier) {
 
-   console.log('Nitesh -- Fetching the conf bridge profile for the identifier '+bridge_identifier);
    var connection  = mysql.createConnection(config);
    var connect = Q.denodeify(connection.connect.bind(connection));
    return connect()
      .then(function (values) {
        var query = Q.denodeify(connection.query.bind(connection));
-       return query('SELECT * FROM confbridge WHERE bridge_identifier = ?',
+       return query('SELECT * FROM conference_bridge WHERE bridge_identifier = ?',
                          [bridge_identifier])
        .then(function (result) {
          console.log('Fetched bridge profile for ', bridge_identifier);
@@ -161,6 +160,115 @@ function MySqlDB(dbConfig) {
        .catch(function (err) {
          if (err) {
            console.error("Failed to fetch the bridge profile for ", bridge_identifier);
+           console.error(err);
+         }
+       })
+       .finally(function () {
+	 connection.end();
+       });
+    })
+    .catch(function (err) {
+      console.error(err);
+    });
+
+  };
+
+
+  /**
+   * Retrieves the participant IVR profile.
+   *
+   * @param {String} user_ivr_profile_id - identifier for user IVR profile
+   * @return result - participant ivr profile
+   */
+  this.getUserIvrProfile = function(user_ivr_prof_id) {
+
+   var connection  = mysql.createConnection(config);
+   var connect = Q.denodeify(connection.connect.bind(connection));
+   return connect()
+     .then(function (values) {
+       var query = Q.denodeify(connection.query.bind(connection));
+       return query('SELECT * FROM participant_ivr WHERE id = ?',
+                         [user_ivr_prof_id])
+       .then(function (result) {
+         console.log('Nitesh --Fetched  participant IVR profile for ', user_ivr_prof_id);
+         console.log('Nitesh --IVR profile is ' + JSON.stringify(result[0][0]));
+         return result[0][0];
+       })
+       .catch(function (err) {
+         console.error(err);
+         if (err) {
+           console.error("Failed to fetch the participant ivr profile for ", user_ivr_prof_id);
+           console.error(err);
+         }
+       })
+       .finally(function () {
+	 connection.end();
+       });
+    })
+    .catch(function (err) {
+      console.error(err);
+    });
+
+  };
+
+  /**
+   * Retrieves the bridge admin profile.
+   *
+   * @param {String} admin_profile_id - admin profile identifier
+   * @return result - bridge admin profile
+   */
+  this.getAdminProfile = function(admin_profile_id) {
+
+   var connection  = mysql.createConnection(config);
+   var connect = Q.denodeify(connection.connect.bind(connection));
+   return connect()
+     .then(function (values) {
+       var query = Q.denodeify(connection.query.bind(connection));
+       return query('SELECT * FROM bridge_admin WHERE id = ?',
+                         [admin_profile_id])
+       .then(function (result) {
+         console.log('Fetched  bridge admin profile for ', admin_profile_id);
+         return result[0][0];
+       })
+       .catch(function (err) {
+         if (err) {
+           console.error("Failed to fetch bridge admin profile for ", admin_profile_id);
+           console.error(err);
+         }
+       })
+       .finally(function () {
+	 connection.end();
+       });
+    })
+    .catch(function (err) {
+      console.error(err);
+    });
+
+  };
+
+
+  /**
+   * Retrieves the bridge admin's IVR profile.
+   *
+   * @param {String} admin_ivr_prof_id - admin ivr profile id
+   * @return result - bridge admin's IVR profile
+   */
+  this.getAdminIvrProfile = function(admin_ivr_prof_id) {
+
+   var connection  = mysql.createConnection(config);
+   var connect = Q.denodeify(connection.connect.bind(connection));
+   return connect()
+     .then(function (values) {
+       var query = Q.denodeify(connection.query.bind(connection));
+       return query('SELECT * FROM bridge_admin_ivr WHERE id = ?',
+                         [admin_ivr_prof_id])
+       .then(function (result) {
+         console.log('Fetched  bridge admin IVR profile for ', admin_ivr_prof_id);
+         return result[0][0];
+       })
+       .catch(function (err) {
+         if (err) {
+           console.error("Failed to fetch bridge admin IVR profile for ", admin_ivr_prof_id);
            console.error(err);
          }
        })

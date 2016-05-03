@@ -2,6 +2,7 @@
 
 var ChannelDriver = require('./channeldriver.js');
 var VoxConfBridge = require('./voxconfbridge.js');
+var BridgeInfo = require('./bridgeinfo.js');
 
 /**
  * This class keeps up with all the bridges managed by the ARI client.
@@ -27,41 +28,34 @@ function VoxBridgeManager(ari, db) {
   this.handleChannel = function(event, channel) {
     var outbound = event.args[0] === 'outbound';
     if (!outbound) {
-      var confBridge = undefined;
+      var conf_bridge = undefined;
       var exten = event.args[0];
-      var confBridgeProfile = undefined;
-      db.getConfBridgeProfile(exten)
-	     .then(function (result) {
-               console.log("bridge profile is "+ JSON.stringify(result));
-               confBridgeProfile = result;
-              })
-      .then( function() {
-        if (confBridgeProfile === undefined) {
-          console.log("Unknown extension [" + exten + "] blocking it");
-          ChannelDriver.blockChannel(ari, channel.id);
-        } else { 
-          console.log("This is a known extension, we should handle it");
-          channel.answer(function (err) {
-            /** check there is already a bridge for this extension **/ 
-            confBridge  = self.findBridge(exten);
-            if(confBridge !== undefined) { 
-              console.log("We already have a bridge for this extension, so just use it");
-              confBridge.registerUser(event, false, channel);
-            } else {
-              console.log("Can't find any existing bridge for this extension");
-              confBridge = new VoxConfBridge(ari);
-              confBridge.init(confBridgeProfile['bridge_identifier'], confBridgeProfile['remote_sip_uri']);
-              /**Add the bridge to the bridgeList**/
-              bridgeList[confBridge.bridge.id] = confBridge;
-              console.log("Bridge ID to register is "+ confBridge.bridge.id);
-              self.registerEvents(confBridge.bridge);
-              confBridge.registerUser(event, false, channel);
-            }
-          
-          });
-        }
-      })
-      .done();
+
+      conf_bridge  = self.findBridge(exten);
+      if(conf_bridge !== undefined) { 
+        console.log("Incoming channel with extension [" + exten + "] maps to the bridge ["+ conf_bridge.bridge.id + "]");
+        conf_bridge.registerUser(event, false, channel);
+      } else {
+        console.log("Can't find any existing bridge for this extension [" + exten + "]");
+        BridgeInfo.getBridgeInfo(exten)
+        .then(function processBridgeInfo(bridge_info) {
+          console.log("Nitesh -- bridge info is back, yay");
+          if (bridge_info !== undefined) {
+            conf_bridge = new VoxConfBridge(ari);
+            conf_bridge.init(bridge_info);
+
+            /**Add the bridge to the bridgeList**/
+            bridgeList[conf_bridge.bridge.id] = conf_bridge;
+            console.log("Bridge ID to register is "+ conf_bridge.bridge.id);
+
+            self.registerEvents(conf_bridge.bridge);
+            conf_bridge.registerUser(event, false, channel);
+          } else {
+            console.log("Unknown extension [" + exten + "] blocking it");
+            ChannelDriver.blockChannel(ari, channel.id);
+          }
+        });
+      }
     }
     else {
       if (event.args.length !== 2) {
@@ -118,9 +112,9 @@ function VoxBridgeManager(ari, db) {
        var ret  = undefined;
        console.log("Nitesh -- finding the bridge for exten "+ exten);
        for (var id in bridgeList) {
-         var confBridge = bridgeList[id];
-         if (confBridge.bridge.bridgeExten === exten && !confBridge.isInactive()) {
-           ret = confBridge;
+         var conf_bridge = bridgeList[id];
+         if (conf_bridge.bridge.config.bridge_identifier === exten && !conf_bridge.isInactive()) {
+           ret = conf_bridge;
            break;
          }
        }
