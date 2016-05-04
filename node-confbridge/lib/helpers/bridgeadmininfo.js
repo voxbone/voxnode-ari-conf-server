@@ -2,12 +2,13 @@
 
 var db = require('../../data/db.js');
 var BridgeAdminIvrInfo = require('./bridgeadminivrinfo.js');
+var Q = require('q');
 
 function BridgeAdminInfo() {
 
   /*Special key to activate admin menu*/
   this.menu_key = '#';
-  
+
   /*Passcode for admin*/
   this.passcode = undefined;
 
@@ -17,14 +18,14 @@ function BridgeAdminInfo() {
   this.access_e164 = undefined;
 
   this.ivr_profile = undefined;
-  
+
 };
 
 
 BridgeAdminInfo.getBridgeAdminInfo = Q.async(function(admin_profile_id) {
   if (admin_profile_id !== undefined) {
     db.getAdminProfile(admin_profile_id)
-    .then(function processAdminProfile(result) { 
+    .then(function processAdminProfile(result) {
       if (result !== undefined) {
         var admin_info = new BridgeAdminInfo();
         admin_info.init(result);

@@ -1,6 +1,7 @@
 'use strict';
 
 var db = require('../../data/db.js');
+var Q = require('q');
 
 function BridgeAdminIvrInfo() {
   this.rollcall_key = undefined;
@@ -14,7 +15,7 @@ function BridgeAdminIvrInfo() {
 BridgeAdminIvrInfo.getAdminIvrInfo = Q.async(function(ivr_profile_id) {
   if (ivr_profile_id !== undefined) {
     db.getAdminIvrProfile(ivr_profile_id)
-    .then(function processAdminIvrProfile(result) { 
+    .then(function processAdminIvrProfile(result) {
       if (result !== undefined) {
         var admin_ivr_info = new AdminIvrInfo();
         admin_ivr_info.init(result);
