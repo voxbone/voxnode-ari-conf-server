@@ -47,7 +47,7 @@ function RecordingDriverModule() {
         .done();
     }
     var currentPlayback = ari.Playback();
-    var soundToPlay = util.format('sound:%s', bridge.settings.recording_sound);
+    var soundToPlay = util.format('sound:%s', bridge.config.media_settings.recording_sound);
     var record = Q.denodeify(bridge.record.bind(bridge));
     self.startRecording(bridge)
       .then(function () {
@@ -96,7 +96,7 @@ function RecordingDriverModule() {
         .done();
     }
     currentPlayback = ari.Playback();
-    var soundToPlay = util.format('sound:%s', bridge.settings.recording_sound);
+    var soundToPlay = util.format('sound:%s', bridge.config.media_settings.recording_sound);
     var unpause = Q.denodeify(ari.recordings.unpause.bind(ari));
     unpause({recordingName: bridge.currentRecording.name})
       .then(function () {

@@ -1,6 +1,21 @@
- Q = require('q');
+Q = require('q');
 
 module.exports = {
+
+  /**
+   * Answers the channel.
+   *
+   * @param {Object} ari - the ARI client
+   * @param {Object} channel - the channel id
+   */
+  answerChannel : function(ari, channelId) {
+    console.log("answering the channel");
+    var answer = Q.denodeify(ari.channels.answer.bind(ari));
+    return answer({channelId: channelId})
+      .catch(function(err) {
+        console.error(err);
+      });
+  },
 
   /**
    * Hangs up a channel.
@@ -48,38 +63,4 @@ module.exports = {
       });
   },
 
-  /**
-   * Start musicOnHold on the bridge.
-   *
-   * @param {Object} ari - the ARI client
-   * @param {Object} bridgeID - ID of the bridge
-   */
-  bridgeStartMoh : function(ari, bridgeId) {
-    var startMoh = Q.denodeify(ari.bridges.startMoh.bind(ari));
-    console.log("Nitesh -- start musicOnHold for the bridge "+ bridgeId);
-    return startMoh({bridgeId: bridgeId})
-      .catch(function(err) {
-        if(err) {
-	  console.error("startMoh failed on the bridge ");
-          console.error(err);
-        }
-      });
-  },
-  
-  /**
-   * Stop musicOnHold on the bridge.
-   *
-   * @param {Object} ari - the ARI client
-   * @param {Object} bridgeID - ID of the bridge
-   */
-  bridgeStopMoh : function(ari, bridgeId) {
-    var stopMoh = Q.denodeify(ari.bridges.stopMoh.bind(ari));
-    return stopMoh({bridgeId: bridgeId})
-      .catch(function(err) {
-        if(err) {
-          console.error("stopMoh failed on the bridge ");
-          console.error(err);
-        }
-      });
-  },
 }

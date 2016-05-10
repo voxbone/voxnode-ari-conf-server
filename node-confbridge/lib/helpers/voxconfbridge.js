@@ -20,17 +20,12 @@ function VoxConfBridge(ari) {
    */
   this.init = function(bridge_info) {
     self.bridge.config = bridge_info;
+    console.log("Bridge PIn control "+ self.bridge.config.pin_auth);
     var createBridge = Q.denodeify(self.bridge.create.bind(self.bridge));
     createBridge({type: 'mixing,dtmf_events'})
       .then(function () {
         self.setBridgeDefaults();
         self.registerEvents(self.bridge);
-      })
-      .then(function () {
-        return db.getBridgeProfile();
-      })
-      .then(function (result) {
-        self.bridge.settings = result;
       })
       .then(function () {
         self.bridge.fsm = bridgeFsm(ari, self.bridge, self.users);
@@ -158,7 +153,7 @@ function VoxConfBridge(ari) {
       if (!userList[chanId].settings.quiet &&
           !groups.isFollower(userList,chanId)) {
 
-        var soundToPlay = util.format('sound:%s', self.bridge.settings.join_sound);
+        var soundToPlay = util.format('sound:%s', self.bridge.config.media_settings.join_sound);
         var play = Q.denodeify(ari.channels.play.bind(ari));
         play({channelId: chanId, media: soundToPlay})
           .catch(function (err) {
@@ -230,7 +225,7 @@ function VoxConfBridge(ari) {
           !groups.isFollower(userList,chanId)) {
 
         var soundToPlay = util.format('sound:%s',
-                                      self.bridge.settings.leave_sound);
+                                      self.bridge.config.media_settings.leave_sound);
         var play = Q.denodeify(ari.channels.play.bind(ari));
         play({channelId: chanId, media: soundToPlay})
           .catch(function (err) {

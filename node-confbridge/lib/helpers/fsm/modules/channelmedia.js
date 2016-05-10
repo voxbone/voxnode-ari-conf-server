@@ -42,7 +42,7 @@ function ChannelMediaModule() {
     currentPlayback = ari.Playback();
     if (!muted) {
       var soundToPlay = util.format('sound:%s',
-                                    bridge.settings.now_muted_sound);
+                                    bridge.config.media_settings.now_muted_sound);
       var mute = Q.denodeify(channel.mute.bind(channel));
       mute({direction: USER_TO_BRIDGE})
         .then(function () {
@@ -57,7 +57,7 @@ function ChannelMediaModule() {
     }
     else {
       var soundToPlay = util.format('sound:%s',
-                                    bridge.settings.now_unmuted_sound);
+                                    bridge.config.media_settings.now_unmuted_sound);
       var unmute = Q.denodeify(channel.unmute.bind(channel));
       unmute({direction: USER_TO_BRIDGE})
         .then(function () {
@@ -283,7 +283,7 @@ function ChannelMediaModule() {
   this.waitingForLeader = function(ari, channel, bridge) {
     var playback = ari.Playback();
     var soundToPlay = util.format('sound:%s',
-                                  bridge.settings.wait_for_leader_sound);
+                                  bridge.config.media_settings.wait_for_leader_sound);
     var play = Q.denodeify(channel.play.bind(channel));
     play({media: soundToPlay}, playback)
       .catch(function (err) {
@@ -304,7 +304,7 @@ function ChannelMediaModule() {
    */
   this.announceRecording = function(ari, chanId, bridge) {
     if (!bridge.recordingPaused) {
-      var soundToPlay = util.format('sound:%s',bridge.settings.recording_sound);
+      var soundToPlay = util.format('sound:%s',bridge.config.media_settings.recording_sound);
       var play = Q.denodeify(ari.channels.play.bind(ari));
       play({media: soundToPlay, channelId: chanId})
         .catch(function (err) {

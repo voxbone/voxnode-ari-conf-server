@@ -81,7 +81,7 @@ function createFsm(channel, ari, userSettings, users, bridge, groups) {
             bridgeDriver.bridgeIsLocked(ari, channel);
           }
           else {
-            if (!userSettings.pin_auth) {
+            if (!bridge.config.pin_auth) {
               if (groups.isFollower(users, channel.id) &&
                   !groups.containsLeaders()) {
                 this.transition('waiting');
@@ -120,17 +120,16 @@ function createFsm(channel, ari, userSettings, users, bridge, groups) {
 
         dtmf: function(data) {
           var self = this;
-          if (data.digit === config.waitingInput.verify) {
-            if (pinAuth.checkPin(bridge.settings.pin_number)) {
+          console.log("Nitesh -- user entered the DTMF "+ data.digit);
+          if (data.digit === bridge.config.waiting_input_verify_key) {
+            console.log("Nitesh -- End of user input "+ data.digit);
+            if (pinAuth.checkPin(bridge.config.bridge_passcode)) {
               if (groups.isFollower(users, channel.id) &&
                   !groups.containsLeaders()) {
                 this.transition('waiting');
               }
               else {
                 bridgeDriver.addToBridge(channel, bridge)
-                  .then(function() {
-                    self.transition('active');
-                  })
                   .catch(function (err) {
                     console.error(err);
                   })
@@ -144,6 +143,10 @@ function createFsm(channel, ari, userSettings, users, bridge, groups) {
           else {
             pinAuth.addDigit(data.digit);
           }
+        },
+
+        activate : function() {
+          this.transition('active');
         },
 
         done: function() {
@@ -193,70 +196,78 @@ function createFsm(channel, ari, userSettings, users, bridge, groups) {
 
         dtmf: function(data) {
           var self = this;
-          switch (data.digit) {
+          var dtmf_mapping = bridge.config.participant_ivr_profile;
+          if (bridge.config.participant_control === true)
+          {
+            switch (data.digit) {
 
-            // Transition to admin menu if user has admin flag
-            case config.menuInput.admin:
-              if (userSettings.admin) {
-                self.transition('admin');
-              }
-              break;
+              // Transition to admin menu if user has admin flag
+              /**
+              case config.menuInput.admin:
+                if (userSettings.admin) {
+                  self.transition('admin');
+                }
+                break;
+              **/
 
-            // Mutes the channel
-            case config.menuInput.mute:
-              channelMedia.muteChannel(ari, bridge, channel);
-              break;
+              // Mutes the channel
+              case dtmf_mapping.toggle_mute_key:
+                channelMedia.muteChannel(ari, bridge, channel);
+                break;
 
-            // Deaf mutes the channel
-            case config.menuInput.deafMute:
-              channelMedia.deafMuteChannel(channel);
-              break;
+              // Deaf mutes the channel
+              case dtmf_mapping.toggle_deafmute_key:
+                channelMedia.deafMuteChannel(channel);
+                break;
 
-            // Leaves the conference and executes configured dialplan
-            case config.menuInput.contInDialplan:
-              continueInDialplan(self, channel);
-              break;
+              // Leaves the conference and executes configured dialplan
+              case config.menuInput.contInDialplan:
+                continueInDialplan(self, channel);
+                break;
 
-            // Decreases audio volume the channel hears
-            case config.menuInput.decLisVol:
-              channelMedia.decrementListenVolume(channel);
-              break;
+              // Decreases audio volume the channel hears
+              case config.menuInput.decLisVol:
+                channelMedia.decrementListenVolume(channel);
+                break;
 
-            // Resets audio volume the channel hears
-            case config.menuInput.resetLisVol:
-              channelMedia.resetListenVolume(channel);
-              break;
+              // Resets audio volume the channel hears
+              case config.menuInput.resetLisVol:
+                channelMedia.resetListenVolume(channel);
+                break;
 
-            // Increases audio volume the channel hears
-            case config.menuInput.incLisVol:
-              channelMedia.incrementListenVolume(channel);
-              break;
+              // Increases audio volume the channel hears
+              case config.menuInput.incLisVol:
+                channelMedia.incrementListenVolume(channel);
+                break;
 
-            // Decreases audio volume the channel outputs
-            case config.menuInput.decTalkVol:
-              channelMedia.decrementTalkVolume(channel);
-              break;
+              // Decreases audio volume the channel outputs
+              case config.menuInput.decTalkVol:
+                channelMedia.decrementTalkVolume(channel);
+                break;
 
-            // Resets audio volume the channel outputs
-            case config.menuInput.resetTalkVol:
-              channelMedia.resetTalkVolume(channel);
-              break;
+              // Resets audio volume the channel outputs
+              case config.menuInput.resetTalkVol:
+                channelMedia.resetTalkVolume(channel);
+                break;
 
-            // Increases audio volume the channel outputs
-            case config.menuInput.incTalkVol:
-              channelMedia.incrementTalkVolume(channel);
-              break;
+              // Increases audio volume the channel outputs
+              case config.menuInput.incTalkVol:
+                channelMedia.incrementTalkVolume(channel);
+                break;
 
-            // Changes the pitch of the audio the channel outputs
-            case config.menuInput.pitchChange:
-              channelMedia.pitchChange(channel);
-              break;
+              // Changes the pitch of the audio the channel outputs
+              case config.menuInput.pitchChange:
+                channelMedia.pitchChange(channel);
+                break;
 
-            // DTMF has no specified functionality
-            default:
-              console.log(util.format('%s is not a recognized DTMF keybind',
+              // DTMF has no specified functionality
+              default:
+                console.log(util.format('%s is not a recognized DTMF keybind',
                           data.digit));
-              break;
+                break;
+            }
+          } else {
+                console.log("Participant DTMF control is disabled, ignoring the DTMF", data.digit);
           }
         },
 

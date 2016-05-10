@@ -34,20 +34,20 @@ function VoxBridgeManager(ari, db) {
       conf_bridge  = self.findBridge(exten);
       if(conf_bridge !== undefined) { 
         console.log("Incoming channel with extension [" + exten + "] maps to the bridge ["+ conf_bridge.bridge.id + "]");
+        ChannelDriver.answerChannel(ari, channel.id);
         conf_bridge.registerUser(event, false, channel);
       } else {
         console.log("Can't find any existing bridge for this extension [" + exten + "]");
         BridgeInfo.getBridgeInfo(exten)
         .then(function processBridgeInfo(bridge_info) {
-          console.log("Nitesh -- bridge info is back, yay");
           if (bridge_info !== undefined) {
+            console.log("Nitesh -- bridge info is back, we can answer the channel");
+            ChannelDriver.answerChannel(ari, channel.id);
             conf_bridge = new VoxConfBridge(ari);
             conf_bridge.init(bridge_info);
-
             /**Add the bridge to the bridgeList**/
             bridgeList[conf_bridge.bridge.id] = conf_bridge;
             console.log("Bridge ID to register is "+ conf_bridge.bridge.id);
-
             self.registerEvents(conf_bridge.bridge);
             conf_bridge.registerUser(event, false, channel);
           } else {

@@ -34,7 +34,7 @@ function BridgeDriverModule() {
     /**Strip the uri scheme**/
     var uriScheme = bridge.config.remote_sip_uri.indexOf('sip:') === 0 ? 'sip' : 'sips';
     var uri = bridge.config.remote_sip_uri.substr(uriScheme.length + 1);
-    return invite({endpoint: 'SIP/'+config.voxconfpeer+'/voxconf!'+uri, app: config.ari_app , appArgs: ['outbound', bridge.bridgeExten],  variables: {'SIPADDHEADER':'X-Remote-URI:'+bridge.config.remote_sip_uri} })
+    return invite({endpoint: 'SIP/'+config.voxconfpeer+'/voxconf!'+uri, app: config.ari_app , appArgs: ['outbound', bridge.config.bridge_identifier],  variables: {'SIPADDHEADER':'X-Remote-URI:'+bridge.config.remote_sip_uri} })
       .catch(function(err) {
         console.error(err);
       });
@@ -78,7 +78,7 @@ function BridgeDriverModule() {
   this.bridgeIsLocked = function(ari, channel, bridge) {
     var playback = ari.Playback();
     var soundToPlay = util.format('sound:%s',
-                                  bridge.settings.locked_sound);
+                                  bridge.config.media_settings.locked_sound);
     var play = Q.denodeify(channel.play.bind(channel));
     play({media: soundToPlay}, playback)
       .catch(function(err) {
@@ -107,7 +107,7 @@ function BridgeDriverModule() {
       var chanId = bridge.lastJoined.pop();
       users[chanId].fsm.transition('inactive');
       var soundToPlay = util.format('sound:%s',
-                                    bridge.settings.kicked_sound);
+                                    bridge.config.media_settings.kicked_sound);
       var remove = Q.denodeify(bridge.removeChannel.bind(bridge));
       var playback = ari.Playback();
       remove({channel: chanId})
@@ -152,7 +152,7 @@ function BridgeDriverModule() {
     currentPlayback = ari.Playback();
     if (!bridge.locked) {
       var soundToPlay = util.format('sound:%s',
-                                    bridge.settings.now_locked_sound);
+                                    bridge.config.media_settings.now_locked_sound);
       var play = Q.denodeify(bridge.play.bind(bridge));
       play({media: soundToPlay}, currentPlayback)
         .catch(function (err) {
@@ -162,7 +162,7 @@ function BridgeDriverModule() {
     }
     else {
       var soundToPlay = util.format('sound:%s',
-                                    bridge.settings.now_unlocked_sound);
+                                    bridge.config.media_settings.now_unlocked_sound);
       var play = Q.denodeify(bridge.play.bind(bridge));
       play({media: soundToPlay}, currentPlayback)
         .catch(function (err) {

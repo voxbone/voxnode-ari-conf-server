@@ -84,6 +84,7 @@ function UserSetup(ari, db, groups) {
 			  }
 			  })
 	  .then(function () {
+                          console.log("Nitesh -- going to listen for events ");
 			  self.registerEvents(channel);
 			  })
 	  .then(function () {
@@ -121,6 +122,7 @@ function UserSetup(ari, db, groups) {
    * @param {Object} channel - the channel to register events to
    */ 
   this.registerEvents = function(channel) {
+    console.log("Nitesh -- listening for DTMF events for channel "+ channel.id);
     channel.on('ChannelDtmfReceived', this.dtmfHandler);
   };
 
@@ -130,6 +132,7 @@ function UserSetup(ari, db, groups) {
    * @param {Object} channel - the channel to unregister events for
    */
   this.unregisterEvents = function(channel) {
+    console.log("Nitesh -- Unregistering for DTMF events for channel "+ channel.id);
     channel.removeListener('ChannelDtmfReceived', this.dtmfHandler);
   };
 
@@ -148,6 +151,7 @@ function UserSetup(ari, db, groups) {
    * @param {Object} event - the DTMF event object
    */
   this.dtmfHandler = function(event) {
+    console.log("Nitesh -- Got the DTMF "+ event.digit);
     userList[event.channel.id].fsm.handle('dtmf', { digit: event.digit });
   };
 

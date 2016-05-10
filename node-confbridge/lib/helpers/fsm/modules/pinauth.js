@@ -52,7 +52,7 @@ function PinAuthModule() {
   this.enterPin = function(ari, channel, bridge) {
     currentPlayback = ari.Playback();
     var soundToPlay = util.format('sound:%s',
-                                  bridge.settings.enter_pin_sound);
+                                  bridge.config.media_settings.enter_pin_sound);
     var play = Q.denodeify(channel.play.bind(channel));
     play({media: soundToPlay}, currentPlayback)
       .catch(function(err) {
@@ -73,14 +73,14 @@ function PinAuthModule() {
     retries++;
     currentPlayback = ari.Playback();
     var soundToPlay = util.format('sound:%s',
-                                  bridge.settings.bad_pin_sound);
+                                  bridge.config.media_settings.bad_pin_sound);
     var play = Q.denodeify(channel.play.bind(channel));
     play({media: soundToPlay}, currentPlayback)
       .catch(function(err) {
         console.error(err);
       })
       .done();
-    if (retries > bridge.settings.pin_retries) {
+    if (retries == bridge.config.pin_retries) {
       currentPlayback.once('PlaybackFinished', function (err, completedPlayback) {
         var hangup = Q.denodeify(channel.hangup.bind(channel));
         hangup()
