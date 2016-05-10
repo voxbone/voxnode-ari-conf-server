@@ -37,7 +37,6 @@ BridgeInfo.getBridgeInfo = function (bridge_identifier) {
       db.getConfBridgeProfile(bridge_identifier)
       .then(function processBridgeProfile(result) {
         if (result !== undefined) {
-          console.log("Nitesh -- Bridge Info is "+ JSON.stringify(result));
           bridge_config = result;
         }
         else {
@@ -89,12 +88,13 @@ BridgeInfo.prototype.init = function(bridge_config, media_settings) {
     self.participant_control = Boolean(bridge_config['participant_control']);
     self.admin_control = Boolean(bridge_config['admin_control']);
 
+    var admin_profile_id = bridge_config['admin_prof_id'];
+    var participant_ivr_profile_id = bridge_config['participant_prof_id'];
+
     self.media_settings = media_settings;
+    console.log("Nitesh -- Bridge Info is "+ JSON.stringify(bridge_config));
     console.log("Nitesh -- bridge media settings ", JSON.stringify(media_settings));
 
-    var admin_profile_id = result['admin_prof_id'];
-    var participant_ivr_profile_id = result['participant_prof_id'];
-    
     self.initParticipantProfile(participant_ivr_profile_id)
     .then( function getAdminProfile(admin_profile_id) {
        self.initAdminProfile()
@@ -121,6 +121,7 @@ BridgeInfo.prototype.initParticipantProfile = function(participant_ivr_profile_i
       })
       .done();
     } else {
+      self.participant_control = false;
       console.log("Participant control not enabled for this bridge");
       resolve();
     }
@@ -142,6 +143,7 @@ BridgeInfo.prototype.initAdminProfile = function(admin_profile_id) {
       })
       .done();
     } else {
+      self.admin_control = false;
       console.log("Admin control not enabled for this bridge");
       resolve();
     }
