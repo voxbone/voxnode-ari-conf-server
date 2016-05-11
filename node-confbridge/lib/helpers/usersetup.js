@@ -18,27 +18,17 @@ function UserSetup(ari, db, groups) {
    * Contains all users that join the conference, where the index is the
    * channel id.
    */
-  var userList = {};
-
-  /**
-   * Takes care of clean up when a channel leaves the applicaton.
-   *
-   * @param {Object} event - the StasisEnd event
-   * @param {Object} channel - the channel leaving Stasis
-   */
-  ari.on('StasisEnd', function (event, channel) {
-    self.channelCleanUp(channel);
-  });
+  self.userList = {};
 
   /**
    * Cleanup handler for a channel.
    * @param {Object} channel - the channel leaving Stasis
    */
   this.channelCleanUp = function(channel) {
-    if (userList[channel.id]) {
-      var groupType = userList[channel.id].group.group_type;
+    if (self.userList[channel.id]) {
+      var groupType = self.userList[channel.id].group.group_type;
       groups.removeFromGroup(groupType);
-      if (groups.isFollower(userList, channel.id)) {
+      if (groups.isFollower(self.userList, channel.id)) {
         groups.removeFollower(channel);
       }
       self.deleteUser(channel);
@@ -75,11 +65,11 @@ function UserSetup(ari, db, groups) {
 			  groupSettings = result;
 			  })
 	  .then(function () {
-			  var fsm = userFsm(channel, ari, userSettings, userList, bridge,
+			  var fsm = userFsm(channel, ari, userSettings, self.userList, bridge,
 				  groups);
-			  userList[chanID] = { channel: channel, settings: userSettings,
+			  self.userList[chanID] = { channel: channel, settings: userSettings,
 			  fsm: fsm, group: groupSettings, isOutboundChannel : isOutboundChannel };
-			  if (groups.isFollower(userList, channel.id)) {
+			  if (groups.isFollower(self.userList, channel.id)) {
 			  groups.addFollower(channel);
 			  }
 			  })
@@ -88,14 +78,14 @@ function UserSetup(ari, db, groups) {
 			  self.registerEvents(channel);
 			  })
 	  .then(function () {
-			  var group = userList[chanID].group.group_type;
-        var groupMax = userList[chanID].group.max_members;
+			  var group = self.userList[chanID].group.group_type;
+        var groupMax = self.userList[chanID].group.max_members;
         if (groups.groupIsFull(group, groupMax)) {
           self.hangupChannel(channel, groupType);
         }
         else {
           groups.addToGroup(group);
-          userList[chanID].fsm.handle('ready');
+          self.userList[chanID].fsm.handle('ready');
         }
       })
       .catch(function (err) {
@@ -111,8 +101,8 @@ function UserSetup(ari, db, groups) {
    */
   this.deleteUser = function(channel) {
     var chanID = channel.id;
-    if (userList[chanID]) {
-      delete(userList[chanID]);
+    if (self.userList[chanID]) {
+      delete(self.userList[chanID]);
     }
   };
 
@@ -122,8 +112,30 @@ function UserSetup(ari, db, groups) {
    * @param {Object} channel - the channel to register events to
    */ 
   this.registerEvents = function(channel) {
-    console.log("Nitesh -- listening for DTMF events for channel "+ channel.id);
+
+    channel.on('StasisEnd', function (event, channel) {
+      console.log("Nitesh -- Got the event "+ JSON.stringify(event));
+      console.log("Channels in the userList "+ Object.keys(self.userList).length );
+      self.channelCleanUp(channel);
+    });
+
     channel.on('ChannelDtmfReceived', this.dtmfHandler);
+ 
+   /**
+    ari.channels.setChannelVar({channelId: channel.id, variable : {'TALKDETECT(set)' : ''}},
+                             function(err) {
+                                 if(err) {
+                         	   console.error('Nitesh -- failed to set channel var ', err);
+                                 };
+                             });
+    channel.on('ChannelTalkingStarted', function (event, channel) {
+      console.log("Channel is now talking ", channel.id);
+    });
+    channel.on('ChannelTalkingFinished', function (event, channel) {
+      console.log("Channel is not talking anymore", channel.id);
+    });
+   **/
+
   };
 
   /**
@@ -142,7 +154,7 @@ function UserSetup(ari, db, groups) {
    * @return {Object} userList - the list of users
    */
   this.getUsers = function() {
-    return userList;
+    return self.userList;
   };
 
   /**
@@ -152,7 +164,7 @@ function UserSetup(ari, db, groups) {
    */
   this.dtmfHandler = function(event) {
     console.log("Nitesh -- Got the DTMF "+ event.digit);
-    userList[event.channel.id].fsm.handle('dtmf', { digit: event.digit });
+    self.userList[event.channel.id].fsm.handle('dtmf', { digit: event.digit });
   };
 
   /**
@@ -161,7 +173,7 @@ function UserSetup(ari, db, groups) {
    * @param {Object} channel - the channel done with the application
    */
   this.handleDone = function(channel) {
-    userList[channel.id].fsm.handle('done');
+    self.userList[channel.id].fsm.handle('done');
   };
 
   /**
@@ -172,8 +184,8 @@ function UserSetup(ari, db, groups) {
    */
   this.activateChannel = function(channel) {
     var channelId = channel.id;
-    if (userList[channelId] !== undefined) {
-      userList[channelId].fsm.handle('activate');
+    if (self.userList[channelId] !== undefined) {
+      self.userList[channelId].fsm.handle('activate');
     }
   };
 
