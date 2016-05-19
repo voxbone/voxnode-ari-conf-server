@@ -44,12 +44,17 @@ function VoxBridgeManager(ari, db) {
             console.log("Nitesh -- bridge info is back, we can answer the channel");
             ChannelDriver.answerChannel(ari, channel.id);
             conf_bridge = new VoxConfBridge(ari);
-            conf_bridge.init(bridge_info);
-            /**Add the bridge to the bridgeList**/
-            bridgeList[conf_bridge.bridge.id] = conf_bridge;
-            console.log("Bridge ID to register is "+ conf_bridge.bridge.id);
-            self.registerEvents(conf_bridge.bridge);
-            conf_bridge.registerUser(event, false, channel);
+            conf_bridge.init(bridge_info)
+            .then (function () {
+              /**Add the bridge to the bridgeList**/
+              bridgeList[conf_bridge.bridge.id] = conf_bridge;
+              console.log("Bridge ID to register is "+ conf_bridge.bridge.id);
+              self.registerEvents(conf_bridge.bridge);
+              conf_bridge.registerUser(event, false, channel);
+            })
+            .catch (function handleError(err) {
+              ChannelDriver.blockChannel(ari, channel.id);
+            });
           } else {
             console.log("Unknown extension [" + exten + "] blocking it");
             ChannelDriver.blockChannel(ari, channel.id);

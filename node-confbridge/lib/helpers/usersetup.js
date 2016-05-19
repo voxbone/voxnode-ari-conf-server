@@ -121,8 +121,7 @@ function UserSetup(ari, db, groups) {
 
     channel.on('ChannelDtmfReceived', this.dtmfHandler);
  
-   /**
-    ari.channels.setChannelVar({channelId: channel.id, variable : {'TALKDETECT(set)' : ''}},
+    ari.channels.setChannelVar({channelId: channel.id, variable : {'TALK_DETECT(set)' : ''}},
                              function(err) {
                                  if(err) {
                          	   console.error('Nitesh -- failed to set channel var ', err);
@@ -134,7 +133,6 @@ function UserSetup(ari, db, groups) {
     channel.on('ChannelTalkingFinished', function (event, channel) {
       console.log("Channel is not talking anymore", channel.id);
     });
-   **/
 
   };
 

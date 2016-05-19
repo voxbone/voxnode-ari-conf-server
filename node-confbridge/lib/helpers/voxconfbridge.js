@@ -19,21 +19,25 @@ function VoxConfBridge(ari) {
    * Sets up the bridge for the conference.
    */
   this.init = function(bridge_info) {
-    self.bridge.config = bridge_info;
-    console.log("Bridge PIn control "+ self.bridge.config.pin_auth);
-    var createBridge = Q.denodeify(self.bridge.create.bind(self.bridge));
-    createBridge({type: 'mixing,dtmf_events'})
-      .then(function () {
-        self.setBridgeDefaults();
-        self.registerEvents(self.bridge);
-      })
-      .then(function () {
-        self.bridge.fsm = bridgeFsm(ari, self.bridge, self.users);
-      })
-      .catch(function (err) {
-        console.error(err);
-      })
-      .done();
+    return Q.Promise(function(resolve, reject, notify) {
+      self.bridge.config = bridge_info;
+      console.log("Bridge PIn control "+ self.bridge.config.pin_auth);
+      var createBridge = Q.denodeify(self.bridge.create.bind(self.bridge));
+      createBridge({type: 'mixing,dtmf_events'})
+        .then(function () {
+          self.setBridgeDefaults();
+          self.registerEvents(self.bridge);
+        })
+        .then(function () {
+          self.bridge.fsm = bridgeFsm(ari, self.bridge, self.users);
+          resolve();
+        })
+        .catch(function (err) {
+          console.error(err);
+          reject(err);
+        })
+        .done();
+    })
   };
 
   /**
