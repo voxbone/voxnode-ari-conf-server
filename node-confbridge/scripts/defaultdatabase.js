@@ -6,7 +6,7 @@ var config = require('../config.json');
 
 /*var connection = Q.denodeify(mysql.createConnection.bind({host     : 'voxconfdb',*/
 
-var connection  = mysql.createConnection({host     : 'voxconfdb',
+var connection  = mysql.createConnection({host     : config.dbHost,
         user     :  config.dbUser,
         password :  config.dbPass,
         database :  config.dbDatabase});
