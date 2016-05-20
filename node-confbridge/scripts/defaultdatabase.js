@@ -34,8 +34,7 @@ connect()
                      + '\'confbridge-locked\',\'confbridge-unlocked\','
                      + '\'confbridge-muted\',\'confbridge-unmuted\','
                      + '\'confbridge-removed\',false,\'conf-now-recording\','
-                     + '\'conf-waitforleader\')');
-      )
+                     + '\'conf-waitforleader\')')
       .then(function () {
         console.log('...inserting data into user_profile');
         return query('INSERT INTO user_profile (user_type,admin,moh,quiet,'
