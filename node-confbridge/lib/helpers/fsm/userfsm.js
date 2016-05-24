@@ -40,7 +40,7 @@ var continueInDialplan = function(self, channel) {
  * @param {Object} groups - the groups instance that handles leaders/followers
  * @return fsm - the fsm to return
  */
-function createFsm(channel, ari, userSettings, users, bridge, groups) {
+function createFsm(channel, ari, userSettings, isOutboundChannel, users, bridge, groups) {
 
   // Different modules needed by the fsm.
   var pinAuth = new PinAuthModule();
@@ -81,7 +81,7 @@ function createFsm(channel, ari, userSettings, users, bridge, groups) {
             bridgeDriver.bridgeIsLocked(ari, channel);
           }
           else {
-            if (!bridge.config.pin_auth) {
+            if (!bridge.config.pin_auth || isOutboundChannel) {
               if (groups.isFollower(users, channel.id) &&
                   !groups.containsLeaders()) {
                 this.transition('waiting');

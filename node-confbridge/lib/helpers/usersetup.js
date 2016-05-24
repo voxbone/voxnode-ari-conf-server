@@ -65,7 +65,7 @@ function UserSetup(ari, db, groups) {
 			  groupSettings = result;
 			  })
 	  .then(function () {
-			  var fsm = userFsm(channel, ari, userSettings, self.userList, bridge,
+			  var fsm = userFsm(channel, ari, userSettings, isOutboundChannel, self.userList, bridge,
 				  groups);
 			  self.userList[chanID] = { channel: channel, settings: userSettings,
 			  fsm: fsm, group: groupSettings, isOutboundChannel : isOutboundChannel };
